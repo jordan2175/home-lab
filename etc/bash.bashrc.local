@@ -1,0 +1,71 @@
+# ----------------------------------------
+# Prompt
+# ----------------------------------------
+#     \[     Start a sequence of non-printing characters
+#     \]     Ends the non-printing characters sequence
+#     \e     An ASCII escape character, older systems use \033 (octal)
+#     ]0;    xterm new icon name and title (icon name is for AfterStep Window Maker)
+#     ]1;    xterm new icon name only
+#     ]2;    xterm escape sequence for the title
+#     \a     End xterm escape sequence
+
+#     \h     Hostname
+#     \w     Current directory
+#     \u     Username
+
+
+# Foreground Colors
+#   Black = 30, Red = 31, Green = 32, Yellow\Orange = 33, Blue = 34
+#   Magenta = 35, Cyan = 36, Light Gray\Black = 37, Default = 39
+# Background Colors
+#   Black = 40, Red = 41, Green = 42, Yellow\Orange = 43, Blue = 44
+#   Magenta = 45, Cyan = 46, Light Gray\Black = 47, Default = 49
+
+TIME_COLOR="\[\e[0;34m\]"
+USERNAME_COLOR="$COLOR_DEFAULT"
+COLOR_END="\[\e[m\]"
+
+
+# ----------------------------------------
+# Check to see if we are root.  If so
+# change background color to red
+# ----------------------------------------
+if [ $UID == 0 ]; then
+    USERNAME_COLOR="\[\e[0;37;41m\]"
+fi
+
+
+# ----------------------------------------
+# Setup promot colors for a git branch
+# ----------------------------------------
+GITBRANCH_COLOR="\[\e[0;97;105m\]"
+parse_git_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+# ----------------------------------------
+# Check to see if we have a fancy Xterm if
+# not do not display title and window bar
+# changes.
+# ----------------------------------------
+case "$TERM" in
+xterm*)
+    PS1="\[\e]2;\u@\h:\w\a\]\n[$TIME_COLOR\t$COLOR_END] \h\n[$USERNAME_COLOR\u$COLOR_END]:\w $GITBRANCH_COLOR\$(parse_git_branch)$COLOR_END-> "
+    ;;
+dumb*)
+    PS1='\h[\u]:\w-> '
+    ;;
+*)
+    PS1="\n[$TIME_COLOR\t$COLOR_END] \h\n[$USERNAME_COLOR\u$COLOR_END]:\w-> "
+    ;;
+esac
+
+export PS1
+
+
+# enable color support of ls and also add handy aliases
+if [ "$TERM" != "dumb" ]; then
+    alias ls='ls --color=auto'
+    alias ll='ls -lah --color=auto'
+    alias halt='halt -p'
+fi
