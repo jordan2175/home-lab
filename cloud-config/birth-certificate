@@ -19,10 +19,10 @@ runcmd:
 - [sh, -c, 'echo -n ''Eth0 Address: '' >> /etc/birth_certificate']
 - cat /sys/class/net/eth0/address >> /etc/birth_certificate
 - echo "------------------------------------------------------------" >> /etc/birth_certificate
-- echo "Boot Log" >> /etc/birth_certificate
-- echo "------------------------------------------------------------" >> /etc/birth_certificate
-- date >> /etc/birth_certificate
+#- echo "Boot Log" >> /etc/birth_certificate
+#- echo "------------------------------------------------------------" >> /etc/birth_certificate
+#- date >> /etc/birth_certificate
 
 # This command will run everytime the system is booted up
-bootcmd:
-- date >> /etc/birth_certificate
+#bootcmd:
+#- date >> /etc/birth_certificate
