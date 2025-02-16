@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+# Last modified on 2013-09-30
+
+
+# ---------------------------------------------------------
+# Files to Backup
+# ---------------------------------------------------------
+@filesToBackup = qw(
+/etc/crontab
+/etc/group
+/etc/hosts.allow
+/etc/hosts.deny
+/etc/motd
+/etc/passwd
+/etc/profile.local
+/etc/resolv.conf
+/etc/samba/smb.conf
+/etc/shadow
+/local/bin/
+);
+
+
+# ---------------------------------------------------------
+# Set base backup directory and create if it does not exist
+# ---------------------------------------------------------
+$backupBaseDir = "/backups/system/";
+unless (-d $backupBaseDir)
+{
+    system ("mkdir $backupBaseDir");
+}
+
+
+
+# ---------------------------------------------------------
+# Get current date for working directory name
+# ---------------------------------------------------------
+$date = `date +%Y-%m-%d`;
+chomp ($date);
+
+
+# ---------------------------------------------------------
+# Make directory for date backup files
+# ---------------------------------------------------------
+unless (-d $backupBaseDir/$date)
+{
+    system ("mkdir $backupBaseDir/$date");
+}
+
+
+# ---------------------------------------------------------
+# Get hostname of current machine
+# ---------------------------------------------------------
+chomp ($hostname = `hostname`);
+
+
+# ---------------------------------------------------------
+# Set working backup directory
+# ---------------------------------------------------------
+$backupDir = "$backupBaseDir/$date/$hostname";
+
+
+# ---------------------------------------------------------
+# Make directory for working backup files
+# ---------------------------------------------------------
+if (-d $backupDir)
+{
+    die "Backup directory already exists\n";
+}
+else
+{
+    system ("mkdir $backupDir");
+}
+
+
+# ---------------------------------------------------------
+# Copy Files
+# ---------------------------------------------------------
+foreach (@filesToBackup)
+{
+    system ("cp $_ $backupDir -R --parents");
+}

@@ -1,0 +1,115 @@
+#!/usr/bin/perl
+#
+#
+####################################################################
+# Ideas taken from Mike's handy rotating-filesystem-snapshot       #
+# utility, http://www.mikerubel.org/computers/rsync_snapshots/     #
+# and from code written by Eric Ross                               #
+####################################################################
+#
+####################################################################
+# This program is not guaranteed to work at all, and by using this #
+# program you release the author of any an all liability.          #
+#                                                                  #
+# You may use this program so long as this notice, disclaimer and  #
+# comment box remain intact and unchanged.                         #
+#                                                                  #
+# Please send me all bugs and patches.                             #
+#                                                                  #
+# Written by Bret Jordan                                           #
+# bret.jordan@utah.edu                                             #
+# http://utahgeeks.sourceforge.net                                 #
+####################################################################
+#
+#
+#
+
+use 5.8.8;
+use strict;
+use warnings;
+
+our $VERSION = "0.02";
+$VERSION = eval $VERSION;
+
+my $sType = shift;
+my $iHistoryLength = shift; 
+my $sFreq = shift;
+
+my $sSnapDir = "/backups/snapshots";
+my $sCurrentBackupDir = "$sSnapDir/backup.current";
+my @aDirsToBackup = qw (/data/home/);
+
+
+unless ($sType eq "rsync" || $sType eq "snap")
+{ &ShowSyntax(); }
+
+
+if ($sType eq "snap")
+{
+    unless ($iHistoryLength =~ /^\d+$/) 
+    { &ShowSyntax(); }
+
+    unless ($sFreq eq "hourly" || $sFreq eq "daily" || $sFreq eq "weekly" || $sFreq eq "monthly") 
+    { &ShowSyntax(); }
+}
+
+
+sub ShowSyntax
+{
+    print "Please run command with ./snapshot <rsync|snap> <historylength> <freq name>\n";
+    print "Example: ./snapshot 7 daily\n";
+    print "Example: ./snapshot 24 hourly\n";
+    die;
+}
+
+# Lets make sure we are running at root
+unless ( $< == 0 ) { die "This program must be run as root\n"; }
+
+# Do we have write access to the snap directory?
+unless ( -w $sSnapDir ) { die "This user does not have write access to $sSnapDir\n"; }
+
+
+if ($sType eq "rsync") 
+{
+    #----------------------------------------
+    # Rsync Command
+    #----------------------------------------
+    #-a = archive mode which is -rlptgoD (no -H,-A,-X)
+    #
+    #-r = recurse in to directories
+    #-l = copy symlinks as symlinks
+    #-p = preserve permissions
+    #-t = preserve modification times
+    #-g = preserve group
+    #-o = preserve owner
+    #-D = preserve device files and special files
+
+    foreach (@aDirsToBackup) { system("rsync -vax --delete $_ $sCurrentBackupDir"); }
+
+    # Touch the directory so the date time is right
+    system("touch $sCurrentBackupDir");
+}
+elsif ($sType eq "snap")
+{
+    # Step 1: Delete oldest snap shot and increase the age of the rest
+    my $i = $iHistoryLength;
+    while ($i > 0)
+    {
+	my $sCurrentDir = "$sSnapDir/backup.$sFreq.$i";
+
+	# If index equals the max length of the history, then delete that directory
+	if ( $i == $iHistoryLength ) { system ("rm -rf $sCurrentDir"); }
+	else 
+	{  
+	    my $j = $i + 1;
+	    my $sNewDir = "$sSnapDir/backup.$sFreq.$j";
+	    if ( -d $sCurrentDir ) { system ("mv $sCurrentDir $sNewDir"); }
+	}
+	$i--;
+    }
+
+    # Step 2: Make a hard link from the backup.current to backup.daily.1
+    unless ( -d $sCurrentBackupDir ) { die "The current backup directory does not exist\n"; }
+    system("cp -al $sSnapDir/backup.current $sSnapDir/backup.$sFreq.1");
+}
+
