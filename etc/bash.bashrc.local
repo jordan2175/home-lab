@@ -68,4 +68,5 @@ if [ "$TERM" != "dumb" ]; then
     alias ls='ls --color=auto'
     alias ll='ls -lah --color=auto'
     alias halt='halt -p'
+    alias ssha='eval $(ssh-agent) && ssh-add'
 fi
