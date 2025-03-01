@@ -1,0 +1,11 @@
+---
+
+# A simple playbook to reboot all of the nodes. 
+# This can also be done via the command line: "ansible all -m reboot -b"
+
+- hosts: nodes
+  become: true
+  tasks:
+
+  - name: reboot the server (if required).
+    ansible.builtin.reboot:

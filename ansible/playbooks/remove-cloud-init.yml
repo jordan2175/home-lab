@@ -1,0 +1,26 @@
+---
+
+# I want to make sure that all of the cloud-init packages and files are removed
+# after first boot and the nodes are up and going. Yes, one could just disable
+# cloud-init to prevent it from starting. In my use case I have no additional 
+# need for cloud-init, so I am just removing it and all of its files.
+
+- hosts: nodes
+  become: true
+  tasks:
+
+  - name: remove and pruge cloud init packages
+    ansible.builtin.apt:
+      name: cloud-init
+      state: absent
+      purge: true
+
+  - name: remove /etc/cloud
+    ansible.builtin.file:
+      path: /etc/cloud
+      state: absent
+
+  - name: remove /var/lib/cloud
+    ansible.builtin.file:
+      path: /var/lib/cloud
+      state: absent
