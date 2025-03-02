@@ -1,11 +1,15 @@
 ---
 
-# I want to make sure that all of the cloud-init packages and files are removed
-# after first boot and the nodes are up and going. Yes, one could just disable
-# cloud-init to prevent it from starting. In my use case I have no additional 
-# need for cloud-init, so I am just removing it and all of its files.
 
-- hosts: nodes
+# ------------------------------------------------------------
+# Remove Cloud-Init
+# ------------------------------------------------------------
+# I want to make sure that all of the cloud-init packages and files are removed
+# after first boot. Yes, one could just disable cloud-init to prevent it from
+# starting. In my use case I have no additional need for cloud-init, so I am
+# just removing it and all of its files.
+
+- hosts: all
   become: true
   tasks:
 
@@ -24,3 +28,4 @@
     ansible.builtin.file:
       path: /var/lib/cloud
       state: absent
+ 
