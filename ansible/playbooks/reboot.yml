@@ -7,5 +7,5 @@
   become: true
   tasks:
 
-  - name: reboot the server (if required)
+  - name: reboot all nodes
     ansible.builtin.reboot:

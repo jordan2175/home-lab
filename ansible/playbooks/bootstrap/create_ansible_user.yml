@@ -1,0 +1,72 @@
+---
+
+# This playbook will do the following:
+# 1. Create an ansible user on the controller
+#   a. Create user, add to appropriate groups, and lock password
+#   b. Setup the sudoers file 
+#   c. Create an SSH key pair for the user
+# 2. Create an ansible user on all of the nodes
+#   a. Create user, add to appropriate groups, and lock password
+#   b. Setup the sudoers file 
+#   c. Copy over the SSH public key from the controller
+
+# ------------------------------------------------------------
+# Step 0: Test connectivity 
+# ------------------------------------------------------------
+# 1. Login to each system with the existing account's username
+#    to accept the SSH host key 
+# 2. Make sure the private key for the existing account does
+#    not have a password
+
+# ------------------------------------------------------------
+# Step 2: Add and configure the ansible user on the nodes
+# ------------------------------------------------------------
+
+- hosts: new
+  become: true
+  vars_prompt:
+
+    - name: existing_user
+      prompt: Existing username with sudo access?
+      private: false
+
+    - name: new_user
+      prompt: Ansible username?
+      private: false
+
+  remote_user: "{{ existing_user }}"
+
+  tasks:
+
+  - name: Create an ansible group
+    ansible.builtin.group:
+      name: "{{ new_user }}"
+      system: false
+      state: present
+
+  - name: Create an ansible user
+    ansible.builtin.user:
+      name: "{{ new_user }}"
+      password: '!'
+      system: false
+      comment: "Ansible User"
+      group: "{{ new_user }}"
+      groups: adm,sudo,ansible 
+      create_home: true
+      shell: /bin/bash 
+      append: true 
+      state: present
+
+  - name: Create a sudoers file for the ansible user
+    ansible.builtin.copy:
+      content: "{{ new_user }} ALL = (ALL) NOPASSWD:ALL"
+      dst: "/etc/sudoers.d/{{ new_user }}"
+      owner: root
+      group: root
+      mode: '0440'
+
+  - name: Add ansible's public key to all nodes
+    ansible.builtin.authorized_key: 
+      user: "{{ user_name }}"
+      key: "{{ lookup('file', '/home/{{ new_user }}/.ssh/id_ed25519.pub') }}" 
+      state: present

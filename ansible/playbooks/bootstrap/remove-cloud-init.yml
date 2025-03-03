@@ -13,18 +13,18 @@
   become: true
   tasks:
 
-  - name: remove and pruge cloud init packages
+  - name: Remove and pruge cloud init packages
     ansible.builtin.apt:
       name: cloud-init
       state: absent
       purge: true
 
-  - name: remove /etc/cloud
+  - name: Remove /etc/cloud
     ansible.builtin.file:
       path: /etc/cloud
       state: absent
 
-  - name: remove /var/lib/cloud
+  - name: Remove /var/lib/cloud
     ansible.builtin.file:
       path: /var/lib/cloud
       state: absent
