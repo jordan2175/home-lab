@@ -1,24 +1,26 @@
 # Bootstrap Gate Server
 
-NOTE: If the locate gets messed up and ansible will not run then try running the following command: `sudo dpkg-reconfigure locales`
+NOTE: If the locale gets messed up and ansible will not run then try running the following command: `sudo dpkg-reconfigure locales`
+
+NOTE: For all manual tasks login over SSH as a normal user then copy and paste the following bits of shell code into the shell, make sure to include the parentheses. All commands assume you have already elevated privledges with `sudo bash`.
+
+
 
 ## Setup root user
 
-### Manual Tasks
-
-Login over SSH as a normal user, then copy and paste the following bits of shell code into the shell, make sure to include the parentheses.
-
 ```
+(
 sudo bash
 ssh-keygen -t ed25519 -C "gate01 root"
 passwd
+)
 ```
 
 
 
 ## Copy root's public SSH key to end nodes
 
-### Manual Tasks
+Need to first login to each node and set a password for the root user.
 
 ```
 (
@@ -30,13 +32,9 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
 )
 ```
 
-NOTE: Use the ansible playbook to copy the root key over to the nodes
-
 
 
 ## Update /etc/hosts
-
-### Manual Tasks
 
 ```
 (
@@ -48,11 +46,32 @@ echo "10.128.64.24 node04" >> /etc/hosts
 )
 ```
 
+
+
+## Create ansible user
+
+```
+(
+useradd ansible -m -s /bin/bash -U -G adm,sudo,ansible -c "Ansible User" 
+usermod ansible -L
+su ansible
+ssh-keygen -t ed25519 -C "gate01 ansible"
+exit
+)
+```
+
+
+
+
+
 ### Ansible Tasks: Nodes Only
 
 This task is ONLY for end nodes, not the gateway server given the chicken-and-egg problem with the entries in the inventory file.
 
 ```
+- hosts: nodes
+  become: true
+  tasks:
   - name: Add nodes to /etc/hosts
     ansible.builtin.blockinfile:
       path: /etc/hosts
@@ -68,7 +87,7 @@ This task is ONLY for end nodes, not the gateway server given the chicken-and-eg
 
 
 
-## Create ansible user
+## Create ansible user on nodes
 
 ### Manual Tasks
 
@@ -174,7 +193,12 @@ rm -f /etc/sudoers.d/90-cloud-init-users
 
 ### Ansible Tasks
 
+As written, this has a chicken and an egg problem. 
+
 ```
+- hosts: all
+  gather_facts: false
+  become: true
   - name: Create a sudoers file for the username ansible
     ansible.builtin.copy:
       content: "ansible ALL = (ALL) NOPASSWD:ALL"
@@ -231,6 +255,10 @@ rm -rf /var/lib/cloud
 ### Ansible Tasks
 
 ```
+- hosts: all
+  gather_facts: false
+  become: true
+  tasks:
   - name: Remove and pruge cloud init packages
     ansible.builtin.apt:
       name: cloud-init
@@ -256,7 +284,7 @@ rm -rf /var/lib/cloud
 
 ```
 (
-apt-get dist-upgrade -y
+apt-get update && apt-get dist-upgrade -y
 reboot
 )
 ```
@@ -264,6 +292,10 @@ reboot
 ### Ansible Tasks
 
 ```
+- hosts: nodes
+  gather_facts: false
+  become: true
+  tasks:
   - name: update and upgrade all nodes in cluster
     ansible.builtin.apt:
       update_cache: true
