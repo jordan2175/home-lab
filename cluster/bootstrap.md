@@ -193,6 +193,7 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
 
 ```
 - hosts: nodes
+  gather_facts: false
   become: true
   tasks:
   - name: Add nodes to /etc/hosts

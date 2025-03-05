@@ -9,7 +9,8 @@
 # starting. In my use case I have no additional need for cloud-init, so I am
 # just removing it and all of its files.
 
-- hosts: all
+- hosts: nodes
+  gather_facts: false
   become: true
   tasks:
 

@@ -3,6 +3,7 @@
 # Update the /etc/hosts file
 
 - hosts: nodes
+  gather_facts: false
   become: true
   tasks:
   - name: Add nodes to /etc/hosts

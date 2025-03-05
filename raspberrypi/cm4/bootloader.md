@@ -180,20 +180,21 @@ BOOTLOADER: up to date
 The BOOT_ORDER property defines the sequence for the different boot modes. 
 It is read **right to left**, and up to eight digits may be defined.
 
+```
 Value - Mode         - Description
-0x0 - SD CARD DETECT - Try SD then wait for card-detect to indicate that the 
-                       card has changed. Deprecated now that 0xf (RESTART) is 
-                       available.
+0x0 - SD CARD DETECT - Try SD then wait for card-detect to indicate that the card 
+                       has changed. Deprecated now that 0xf (RESTART) is available.
 0x1 - SD CARD        - SD card (or eMMC on Compute Module 4).
 0x2 - NETWORK        - Network boot - See Network boot server tutorial.
 0x3 - RPIBOOT        - RPIBOOT - See usbboot.
 0x4 - USB-MSD        - USB mass storage boot - See USB mass storage boot.
 0x5 - BCM-USB-MSD    - USB 2.0 boot from USB Type C socket (CM4: USB type A 
                        socket on CM4IO board). Not available on Raspberry Pi 5.
-0x6 - NVME           - CM4 and Pi 5 only: boot from an NVMe SSD connected to 
-                       the PCIe interface. See NVMe boot for more details.
+0x6 - NVME           - CM4 and Pi 5 only: boot from an NVMe SSD connected to the 
+                       PCIe interface. See NVMe boot for more details.
 0x7 - HTTP           - HTTP boot over ethernet. See HTTP boot for more details.
-0xe - STOP           - Stop and display error pattern. A power cycle is 
-                       required to exit this state.
+0xe - STOP           - Stop and display error pattern. A power cycle is required 
+                       to exit this state.
 0xf - RESTART        - Restart from the first boot-mode in the BOOT_ORDER field 
                        i.e. loop.
+```

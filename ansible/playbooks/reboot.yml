@@ -4,6 +4,7 @@
 # This can also be done via the command line: "ansible all -m reboot -b"
 
 - hosts: nodes
+  gather_facts: false
   become: true
   tasks:
 
