@@ -33,14 +33,15 @@ ssh-keygen -t ed25519 -C "gate01 root"
 
 
 
-## Create ansible user
+## Create ansible system user
 
 NOTE: We need the public key from this process for the cloud-init process before
 we can flash all of the nodes 
 
 ```
 (
-useradd ansible -m -s /bin/bash -U -G adm,sudo,ansible -c "Ansible User" 
+groupadd ansible -r
+useradd ansible -r -m -s /bin/bash -g ansible -G adm,sudo,ansible -c "Ansible User" 
 usermod ansible -L
 su ansible
 ssh-keygen -t ed25519 -C "gate01 ansible"
