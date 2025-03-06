@@ -1,19 +1,18 @@
 ---
 
-
 # ------------------------------------------------------------
 # Remove Cloud-Init
 # ------------------------------------------------------------
-# I want to make sure that all of the cloud-init packages and files are removed
-# after first boot. Yes, one could just disable cloud-init to prevent it from
-# starting. In my use case I have no additional need for cloud-init, so I am
-# just removing it and all of its files.
+# Remove the cloud-init packages and all of its files after first boot. One
+# could just disable cloud-init to prevent it from starting, but that can leave
+# senstive information on the system that is world readable. In my use case I
+# have no additional need for cloud-init, so I am just removing it and all of
+# its files.
 
 - hosts: nodes
   gather_facts: false
   become: true
   tasks:
-
   - name: Remove and pruge cloud init packages
     ansible.builtin.apt:
       name: cloud-init
@@ -29,4 +28,20 @@
     ansible.builtin.file:
       path: /var/lib/cloud
       state: absent
+
+  - name: Remove /boot/firmware/user-data
+    ansible.builtin.file:
+      path: /boot/firmware/user-data
+      state: absent
+
+  - name: Remove /boot/firmware/meta-data
+    ansible.builtin.file:
+      path: /boot/firmware/meta-data
+      state: absent
+
+  - name: Remove /boot/firmware/network-config
+    ansible.builtin.file:
+      path: /boot/firmware/network-config
+      state: absent
+
  

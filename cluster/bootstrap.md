@@ -9,7 +9,15 @@ the following bits of shell code into the shell, make sure to include the
 parentheses. All commands assume you have already elevated privledges with
 `sudo bash`.
 
-
+```
+#cloud-config
+users:
+  - name: root
+    lock_passwd: false
+    hashed_passwd: <output from mkpasswd --method=SHA-512 --rounds=4096>
+    ssh_authorized_keys:
+      - ssh-rsa <key>
+```
 
 ## Flash gate server
 
@@ -27,7 +35,7 @@ NOTE: Login from my computer with my account
 passwd
 sudo bash
 passwd
-ssh-keygen -t ed25519 -C "gate01 root"
+ssh-keygen -t ed25519 -C "Gate01 Root Default"
 )
 ```
 
@@ -44,7 +52,7 @@ groupadd ansible -r
 useradd ansible -r -m -s /bin/bash -g ansible -G adm,sudo,ansible -c "Ansible User" 
 usermod ansible -L
 su ansible
-ssh-keygen -t ed25519 -C "gate01 ansible"
+ssh-keygen -t ed25519 -C "Gate01 Ansible Default"
 exit
 )
 ```
@@ -72,6 +80,9 @@ rm -f /etc/sudoers.d/90-cloud-init-users
 apt-get purge cloud-init -y
 rm -rf /etc/cloud
 rm -rf /var/lib/cloud
+rm -f /boot/firmware/user-data
+rm -f /boot/firmware/meta-data
+rm -f /boot/firmware/network-config
 )
 ```
 
@@ -234,6 +245,21 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
     ansible.builtin.file:
       path: /var/lib/cloud
       state: absent
+
+  - name: Remove /boot/firmware/user-data
+    ansible.builtin.file:
+      path: /boot/firmware/user-data
+      state: absent
+
+  - name: Remove /boot/firmware/meta-data
+    ansible.builtin.file:
+      path: /boot/firmware/meta-data
+      state: absent
+
+  - name: Remove /boot/firmware/network-config
+    ansible.builtin.file:
+      path: /boot/firmware/network-config
+      state: absent
 ```
 
 
@@ -327,7 +353,7 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
       shell: /bin/bash 
       generate_ssh_key: true 
       ssh_key_type: ed25519
-      ssh_key_comment: "gate01 ansible"
+      ssh_key_comment: "Gate01 Ansible Default"
       append: true
       state: present
 ```
