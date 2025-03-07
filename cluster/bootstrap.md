@@ -1,4 +1,4 @@
-# Bootstrap Phase 1: Flash and Initial Setup
+# Bootstrap Phase 0: Flash Gate and Initial Setup
 
 
 NOTE: If the locale gets messed up and ansible will not run then try running the
@@ -131,75 +131,20 @@ reboot
 
 
 
-# Bootstrap Phase 2: Flash and Setup Users on Each Node
+# Bootstrap Nodes Phase 1
 
-
-
-## Flash all nodes
-
-NOTE: Make sure to add my public SSH key and the ansible SSH key to the
-cloud-init process so that I can login in the first place and ansible can run
-to finish configuration.
-
-### Manual Tasks
-
-NOTE: If you needed to manually create the ansible user on a node, this is how
-you would do it.
-
-```
-(
-useradd ansible -m -s /bin/bash -U -G adm,sudo,ansible -c "Ansible User" 
-usermod ansible -L
-su ansible
-ssh-keygen -t ed25519 -C "gate01 ansible"
-exit
-)
-```
-
-
-
-## Setup my user, root user, and ansible user
-
-NOTE: Login from my computer with my account
-
-```
-(
-passwd
-sudo bash
-passwd
-passwd ansible
-)
-```
-
-
-
-# Bootstrap Phase 3: Finish Gate Setup
-
-
-
-## Login to each node
-
-NOTE: Login to each nodes with my account and the root account from the gate
-server to accept the SSH key.
-
-
-
-## Copy root's public SSH key to end nodes
-
-NOTE: Need to first login to each node and set a password for the root user so
-we can copy over the SSH keys that were just created.
-
-```
-(
-ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.20
-ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.21
-ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.22
-ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.23
-ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
-)
-```
-
-
+ - Flash all nodes
+   - NOTE: Make sure to add the root public SSH key to the cloud-init process
+ - Assign IP addresses in DHCP
+   - Do this based on the MAC Address
+   - May need to login and reboot the node to get new address
+   - Or run the ansible script against the temporary IP address and once it reboots it will get the correct one
+ - Login to each node with root to accept SSH key
+ - Run Ansible playbooks
+   - ansible-playbook playbooks/bootstrap/bootstrap-node-stage-1.yml
+   - ansible-playbook playbooks/bootstrap/remove-cloud-init.yml
+   - ansible-playbook playbooks/bootstrap/config-etc-hosts.yml
+   - ansible-playbook playbooks/update.yml
 
 ## Update /etc/hosts on all nodes
 
@@ -220,8 +165,6 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
         10.128.64.24 node04
       marker: "# {mark} ANSIBLE MANAGED BLOCK"
 ```
-
-
 
 ## Remove Cloud-Init from all nodes
 
@@ -262,37 +205,6 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
       state: absent
 ```
 
-
-
-## Setup sudoers on all nodes
-
-```
-- hosts: nodes
-  gather_facts: false
-  become: true
-  - name: Create a sudoers file for the username ansible
-    ansible.builtin.copy:
-      content: "ansible ALL = (ALL) NOPASSWD:ALL"
-      dst: "/etc/sudoers.d/ansible"
-      owner: root
-      group: root
-      mode: '0440'
-  - name: Create a sudoers file for the username jordan
-    ansible.builtin.copy:
-      content: "jordan ALL = (ALL) NOPASSWD:ALL"
-      dst: "/etc/sudoers.d/jordan"
-      owner: root
-      group: root
-      mode: '0440'
-  - name: Delete cloud-init sudo file used for initial bootstrap
-    ansible.builtin.file:
-      path: /etc/sudoers.d/90-cloud-init-users
-      force: true
-      state: absent
-```
-
-
-
 ## Update system
 
 ```
@@ -332,7 +244,42 @@ ssh-copy-id -i .ssh/id_ed25519.pub 10.128.64.24
 # OLD IDEAS - run ansible as root to create accounts, it is faster to just copy
   and paste commands on the shell, but here is a playbook that could do it.
 
-### Ansible Tasks: Gate Only
+
+## Copy root's public SSH key to end nodes
+
+### Cloud Init Tasks
+
+This is all done via Cloud Init
+
+### Manual Tasks
+
+NOTE: Need to first login to each node and set a password for the root user so
+we can copy over the SSH keys that were just created.
+
+```
+(
+ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.20
+ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.21
+ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.22
+ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.23
+ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.24
+)
+```
+
+
+
+## Remove cloud-init sudoers file
+
+```
+  - name: Delete cloud-init sudo file used for initial bootstrap
+    ansible.builtin.file:
+      path: /etc/sudoers.d/90-cloud-init-users
+      force: true
+      state: absent
+```
+
+
+## Ansible Tasks: Gate Only
 
 ```
   - name: Create an ansible group

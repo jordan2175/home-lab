@@ -1,11 +1,15 @@
-[nodes]
-node01
-node02
-node03
-node04
+[clusters:children]
+nodes
+gates
 
-[gate]
+[nodes]
+node[01:04]
+
+[gates]
 gate01
 
 [turing]
 turing01
+
+[bootstrap]
+node04
