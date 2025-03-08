@@ -1,7 +1,3 @@
-[clusters:children]
-nodes
-gates
-
 [nodes]
 node[01:04]
 
@@ -13,3 +9,7 @@ turing01
 
 [bootstrap]
 node04
+
+[clusters:children]
+nodes
+gates

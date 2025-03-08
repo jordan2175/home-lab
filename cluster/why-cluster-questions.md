@@ -78,3 +78,4 @@ Raspberry Pi cluster.
 
  12. Setup the /etc/hosts file to find all of your nodes with short names
  
+Copyright 2025 Bret Jordan, All rights reserved.

@@ -1,7 +1,11 @@
 ---
 
-# A simple playbook to reboot all of the nodes. 
-# This can also be done via the command line: "ansible all -m reboot -b"
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+# ------------------------------------------------------------
+# Reboot all nodes
+# ------------------------------------------------------------
+# Shell: ansible all -m reboot -b
 
 - hosts: nodes
   gather_facts: false

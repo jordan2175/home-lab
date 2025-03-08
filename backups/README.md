@@ -73,4 +73,5 @@ The threat model for RAID data storage includes the following:
 
  1. Less likley
 
- 
+
+Copyright 2025 Bret Jordan, All rights reserved.

@@ -2,10 +2,8 @@
 
 ## Running Playbooks
 
-First run the bootstrap playbook
- - ansible-playbook --ask-become-pass playbooks/bootstrap.yml 
-
-
-ansible-playbook playbooks/update.yml 
-ansible-playbook playbooks/remove-cloud-init.yml 
-ansible-playbook playbooks/poweroff-cluster.yml 
+ - Bootstrap playbooks
+   - ansible-playbook playbooks/bootstrap/bootstrap-node-stage-1.yml
+   - ansible-playbook playbooks/bootstrap/remove-cloud-init.yml
+   - ansible-playbook playbooks/bootstrap/config-etc-hosts.yml
+   - ansible-playbook playbooks/update.yml

@@ -1,6 +1,10 @@
 ---
 
-# A simple playbook to shutdown all of the nodes and the TuringPi board. 
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+# ------------------------------------------------------------
+# Shutdown all nodes and TuringPi boards
+# ------------------------------------------------------------
 
 - hosts: nodes
   become: true

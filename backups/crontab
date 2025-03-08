@@ -1,3 +1,5 @@
+# Copyright 2025 Bret Jordan, All rights reserved.
+
 # Every night at 12:01 make system config backup
 #01 0  * * *     root  /local/bin/backup
 

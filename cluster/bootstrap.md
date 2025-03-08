@@ -304,3 +304,5 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.24
       append: true
       state: present
 ```
+
+Copyright 2025 Bret Jordan, All rights reserved.

@@ -1,6 +1,10 @@
 ---
 
-# Update and upgrade all of the nodes, similar to
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+# ------------------------------------------------------------
+# Update and upgrade all nodes
+# ------------------------------------------------------------
 # sudo apt-get update && sudo apt-get dist-upgrade -y
 # sudo reboot (if needed)
 # sudo atp-get autoremove

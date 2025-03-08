@@ -3,7 +3,7 @@
 ## Generate SSH Keys
 
 ssh-keygen -t ed25519 -C "Username Default"
-ssh-keygen -t ed25519 -C "Ansible"
+ssh-keygen -t ed25519 -C "Ansible Default"
 
 ## Copy keys to server
 

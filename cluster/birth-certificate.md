@@ -59,3 +59,5 @@ their birth certificate.
 bootcmd:
 - date >> /etc/birth_certificate
 ```
+
+Copyright 2025 Bret Jordan, All rights reserved.

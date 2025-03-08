@@ -1,0 +1,184 @@
+#cloud-config
+
+# The very first line of this file MUST be #cloud-config
+# https://cloudinit.readthedocs.io/
+#
+
+
+## --------------------------------------------
+## System Config and Hostname
+## --------------------------------------------
+## Please note that, unless you have a local DNS setup where the hostname is
+## derived from DHCP requests (as with dnsmasq), setting the hostname here will
+## not make the machine reachable by this name. You may also wish to install
+## avahi-daemon (see the "packages:" key below) to make your machine reachable
+## by the .local domain
+## --------------------------------------------
+preserve_hostname: false
+hostname: gate01
+manage_etc_hosts: true
+timezone: America/Denver
+locale: en_US.UTF-8
+
+
+
+## --------------------------------------------
+## Users and Groups
+## --------------------------------------------
+## Add users and groups to the system, and import keys with the ssh-import-id
+## utility
+## --------------------------------------------
+groups:
+- jordan: [jordan]
+- ansible: [ansible]
+
+users:
+- name: jordan
+  gecos: Bret Jordan
+  primary_group: jordan
+  groups: [ jordan, adm, sudo ]
+  sudo: [ "ALL=(ALL) NOPASSWD:ALL" ]
+  shell: /bin/bash
+  lock_passwd: false
+  ssh_authorized_keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICNh/FfLnXELOAOgJ71mlbYYxtc3jtpWTuEId9ZZyAgP Jordan Default
+
+- name: ansible
+  gecos: Ansible User
+  primary_group: ansible
+  groups: [ ansible, adm, sudo ]
+  sudo: [ "ALL=(ALL) NOPASSWD:ALL" ]
+  shell: /bin/bash
+  lock_passwd: false
+  ssh_authorized_keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO/enFFa/0i8vZzL8PNOrOkNztZvNkx9lCZX6hdpiclL Ansible
+
+# On first boot, force the user to change their password
+#chpasswd:
+#  expire: true
+#  users:
+#  - name: jordan
+#    password: changeme
+#    type: text
+
+
+## --------------------------------------------
+## SSH Configuration
+## --------------------------------------------
+## Enable SSH Login with a password
+## --------------------------------------------
+ssh_pwauth: true
+
+## Enable SSH Login via root
+## --------------------------------------------
+disable_root: false 
+
+
+
+## Set up the keyboard layout. See localectl(1), in particular the various
+## list-x11-* sub-commands, to determine the available models, layouts,
+## variants, and options
+#keyboard:
+#  model: pc105
+#  layout: gb
+#  variant:
+#  options: ctrl:nocaps
+
+
+## On first boot, use ssh-import-id to give the specific users SSH access to
+## the default user
+#ssh_import_id:
+#- lp:my_launchpad_username
+#- gh:my_github_username
+
+
+## --------------------------------------------
+## System Updates and Packages
+## --------------------------------------------
+## Update apt database and upgrade packages on first boot
+package_update: true
+package_upgrade: true
+
+## Install additional packages on first boot
+#packages:
+#- avahi-daemon
+#- rng-tools
+#- python3-gpiozero
+#- [python3-serial, 3.5-1]
+
+
+## Run arbitrary commands at rc.local like time
+#runcmd:
+#- [ ls, -l, / ]
+#- [ sh, -xc, "echo $(date) ': hello world!'" ]
+#- [ wget, "http://ubuntu.com", -O, /run/mydir/index.html ]
+
+
+## --------------------------------------------
+## Write Out Files
+## --------------------------------------------
+write_files:
+- content: |
+    RPI_EEPROM_USE_FLASHROM=1
+    CM4_ENABLE_RPI_EEPROM_UPDATE=1
+  path: /etc/default/rpi-eeprom-update
+  append: true
+
+
+- content: |
+    if [ -f /etc/bash.bashrc.local ]; then
+        . /etc/bash.bashrc.local
+    fi
+  path: /etc/skel/.bashrc
+  append: true
+
+
+- content: |
+    if [ -f /etc/bash.bashrc.local ]; then
+        . /etc/bash.bashrc.local
+    fi
+  path: /root/.bashrc
+  append: true
+
+
+- content: |
+    PermitRootLogin yes
+  path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+  append: true
+
+
+# Bash Profile Configuration
+- encoding: b64
+  content: IyAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiMgUHJvbXB0CiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQojICAgICBcWyAgICAgU3RhcnQgYSBzZXF1ZW5jZSBvZiBub24tcHJpbnRpbmcgY2hhcmFjdGVycwojICAgICBcXSAgICAgRW5kcyB0aGUgbm9uLXByaW50aW5nIGNoYXJhY3RlcnMgc2VxdWVuY2UKIyAgICAgXGUgICAgIEFuIEFTQ0lJIGVzY2FwZSBjaGFyYWN0ZXIsIG9sZGVyIHN5c3RlbXMgdXNlIFwwMzMgKG9jdGFsKQojICAgICBdMDsgICAgeHRlcm0gbmV3IGljb24gbmFtZSBhbmQgdGl0bGUgKGljb24gbmFtZSBpcyBmb3IgQWZ0ZXJTdGVwIFdpbmRvdyBNYWtlcikKIyAgICAgXTE7ICAgIHh0ZXJtIG5ldyBpY29uIG5hbWUgb25seQojICAgICBdMjsgICAgeHRlcm0gZXNjYXBlIHNlcXVlbmNlIGZvciB0aGUgdGl0bGUKIyAgICAgXGEgICAgIEVuZCB4dGVybSBlc2NhcGUgc2VxdWVuY2UKCiMgICAgIFxoICAgICBIb3N0bmFtZQojICAgICBcdyAgICAgQ3VycmVudCBkaXJlY3RvcnkKIyAgICAgXHUgICAgIFVzZXJuYW1lCgoKIyBGb3JlZ3JvdW5kIENvbG9ycwojICAgQmxhY2sgPSAzMCwgUmVkID0gMzEsIEdyZWVuID0gMzIsIFllbGxvd1xPcmFuZ2UgPSAzMywgQmx1ZSA9IDM0CiMgICBNYWdlbnRhID0gMzUsIEN5YW4gPSAzNiwgTGlnaHQgR3JheVxCbGFjayA9IDM3LCBEZWZhdWx0ID0gMzkKIyBCYWNrZ3JvdW5kIENvbG9ycwojICAgQmxhY2sgPSA0MCwgUmVkID0gNDEsIEdyZWVuID0gNDIsIFllbGxvd1xPcmFuZ2UgPSA0MywgQmx1ZSA9IDQ0CiMgICBNYWdlbnRhID0gNDUsIEN5YW4gPSA0NiwgTGlnaHQgR3JheVxCbGFjayA9IDQ3LCBEZWZhdWx0ID0gNDkKClRJTUVfQ09MT1I9IlxbXGVbMDszNG1cXSIKVVNFUk5BTUVfQ09MT1I9IiRDT0xPUl9ERUZBVUxUIgpDT0xPUl9FTkQ9IlxbXGVbbVxdIgoKCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQojIENoZWNrIHRvIHNlZSBpZiB3ZSBhcmUgcm9vdC4gIElmIHNvCiMgY2hhbmdlIGJhY2tncm91bmQgY29sb3IgdG8gcmVkCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQppZiBbICRVSUQgPT0gMCBdOyB0aGVuCiAgICBVU0VSTkFNRV9DT0xPUj0iXFtcZVswOzM3OzQxbVxdIgpmaQoKCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQojIFNldHVwIHByb21vdCBjb2xvcnMgZm9yIGEgZ2l0IGJyYW5jaAojIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KR0lUQlJBTkNIX0NPTE9SPSJcW1xlWzA7OTc7MTA1bVxdIgpwYXJzZV9naXRfYnJhbmNoKCkgewogIGdpdCBicmFuY2ggMj4gL2Rldi9udWxsIHwgc2VkIC1lICcvXlteKl0vZCcgLWUgJ3MvKiBcKC4qXCkvKFwxKS8nCn0KCiMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQojIENoZWNrIHRvIHNlZSBpZiB3ZSBoYXZlIGEgZmFuY3kgWHRlcm0gaWYKIyBub3QgZG8gbm90IGRpc3BsYXkgdGl0bGUgYW5kIHdpbmRvdyBiYXIKIyBjaGFuZ2VzLgojIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KY2FzZSAiJFRFUk0iIGluCnh0ZXJtKikKICAgIFBTMT0iXFtcZV0yO1x1QFxoOlx3XGFcXVxuWyRUSU1FX0NPTE9SXHQkQ09MT1JfRU5EXSBcaFxuWyRVU0VSTkFNRV9DT0xPUlx1JENPTE9SX0VORF06XHcgJEdJVEJSQU5DSF9DT0xPUlwkKHBhcnNlX2dpdF9icmFuY2gpJENPTE9SX0VORC0+ICIKICAgIDs7CmR1bWIqKQogICAgUFMxPSdcaFtcdV06XHctPiAnCiAgICA7OwoqKQogICAgUFMxPSJcblskVElNRV9DT0xPUlx0JENPTE9SX0VORF0gXGhcblskVVNFUk5BTUVfQ09MT1JcdSRDT0xPUl9FTkRdOlx3LT4gIgogICAgOzsKZXNhYwoKZXhwb3J0IFBTMQoKCiMgZW5hYmxlIGNvbG9yIHN1cHBvcnQgb2YgbHMgYW5kIGFsc28gYWRkIGhhbmR5IGFsaWFzZXMKaWYgWyAiJFRFUk0iICE9ICJkdW1iIiBdOyB0aGVuCiAgICBhbGlhcyBscz0nbHMgLS1jb2xvcj1hdXRvJwogICAgYWxpYXMgbGw9J2xzIC1sYWggLS1jb2xvcj1hdXRvJwogICAgYWxpYXMgaGFsdD0naGFsdCAtcCcKICAgIGFsaWFzIHNzaGE9J2V2YWwgJChzc2gtYWdlbnQpICYmIHNzaC1hZGQnCmZpCg==
+  owner: root:root
+  path: /etc/bash.bashrc.local
+  permissions: '0644'
+
+
+## --------------------------------------------
+## Run Commands:
+## --------------------------------------------
+# This command will only run the very first time the system is booted
+runcmd:
+- echo "------------------------------------------------------------" > /etc/birth_certificate
+- echo "Birth Certificate" >> /etc/birth_certificate
+- echo "------------------------------------------------------------" >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Product:     '' >> /etc/birth_certificate']
+- lshw -quiet -c system | grep product | cut -s -d ':' -f2 >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Birth Date:   '' >> /etc/birth_certificate']
+- date >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Distro:       '' >> /etc/birth_certificate']
+- lsb_release -d -s 2>/dev/null >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Kernel:       '' >> /etc/birth_certificate']
+- uname -r >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Eth0 Address: '' >> /etc/birth_certificate']
+- cat /sys/class/net/eth0/address >> /etc/birth_certificate
+- echo "------------------------------------------------------------" >> /etc/birth_certificate
+
+
+final_message: |
+  cloud-init has finished
+  version: $version
+  timestamp: $timestamp
+  datasource: $datasource
+  uptime: $uptime

@@ -1,6 +1,10 @@
 ---
 
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+# ------------------------------------------------------------
 # Update the /etc/hosts file
+# ------------------------------------------------------------
 
 - hosts: nodes
   gather_facts: false

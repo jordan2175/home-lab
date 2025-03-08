@@ -1,0 +1,94 @@
+#cloud-config
+
+# The very first line of this file MUST be #cloud-config
+# https://cloudinit.readthedocs.io/
+#
+
+
+## --------------------------------------------
+## System Config and Hostname
+## --------------------------------------------
+## Please note that, unless you have a local DNS setup where the hostname is
+## derived from DHCP requests (as with dnsmasq), setting the hostname here will
+## not make the machine reachable by this name. You may also wish to install
+## avahi-daemon (see the "packages:" key below) to make your machine reachable
+## by the .local domain
+## --------------------------------------------
+preserve_hostname: false
+hostname: node04
+manage_etc_hosts: true
+timezone: America/Denver
+locale: en_US.UTF-8
+
+
+
+## --------------------------------------------
+## Users and Groups
+## --------------------------------------------
+## Add users and groups to the system, and import keys with the ssh-import-id
+## utility
+## --------------------------------------------
+users:
+- name: root
+  lock_passwd: false
+  ssh_authorized_keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGDsm80ryI97zEz/6xqXVf81/9rFNrpGBa46QUbqh9l7 Root Default
+
+
+## --------------------------------------------
+## SSH Configuration
+## --------------------------------------------
+
+## Enable SSH Login with a password
+ssh_pwauth: true
+
+## Enable SSH Login via root
+disable_root: false 
+
+## --------------------------------------------
+
+
+## --------------------------------------------
+## Write Out Files
+## --------------------------------------------
+write_files:
+
+- content: |
+    PermitRootLogin yes
+  path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+  append: true
+
+
+## --------------------------------------------
+## Run Commands
+## --------------------------------------------
+# This command will only run the very first time the system is booted
+runcmd:
+- echo "------------------------------------------------------------" > /etc/birth_certificate
+- echo "Birth Certificate" >> /etc/birth_certificate
+- echo "------------------------------------------------------------" >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Product:     '' >> /etc/birth_certificate']
+- lshw -quiet -c system | grep product | cut -s -d ':' -f2 >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Birth Date:   '' >> /etc/birth_certificate']
+- date >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Distro:       '' >> /etc/birth_certificate']
+- lsb_release -d -s 2>/dev/null >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Kernel:       '' >> /etc/birth_certificate']
+- uname -r >> /etc/birth_certificate
+- [sh, -c, 'echo -n ''Eth0 Address: '' >> /etc/birth_certificate']
+- cat /sys/class/net/eth0/address >> /etc/birth_certificate
+- echo "------------------------------------------------------------" >> /etc/birth_certificate
+#- echo "Boot Log" >> /etc/birth_certificate
+#- echo "------------------------------------------------------------" >> /etc/birth_certificate
+#- date >> /etc/birth_certificate
+
+# This command will run everytime the system is booted up
+#bootcmd:
+#- date >> /etc/birth_certificate
+
+final_message: |
+  cloud-init has finished
+  version: $version
+  timestamp: $timestamp
+  datasource: $datasource
+  uptime: $uptime
