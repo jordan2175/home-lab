@@ -27,4 +27,3 @@
   roles:
     - node-bootstrap
     - no-cloud-init
-
