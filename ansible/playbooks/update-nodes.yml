@@ -18,8 +18,6 @@
     ansible.builtin.apt:
       update_cache: true
       upgrade: dist
-    async: 600
-    poll: 5
 
   - name: check reboot status
     ansible.builtin.stat:

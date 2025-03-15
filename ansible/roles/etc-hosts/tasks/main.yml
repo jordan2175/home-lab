@@ -1,0 +1,18 @@
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+
+# ------------------------------------------------------------
+# Setup /etc/hosts
+# ------------------------------------------------------------
+
+- name: Add nodes to /etc/hosts
+  ansible.builtin.blockinfile:
+    path: /etc/hosts
+    block: |
+      10.128.64.19 gate01
+      10.128.64.20 tpi01
+      10.128.64.21 node01
+      10.128.64.22 node02
+      10.128.64.23 node03
+      10.128.64.24 node04
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"

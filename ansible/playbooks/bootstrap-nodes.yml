@@ -27,3 +27,4 @@
   roles:
     - node-bootstrap
     - no-cloud-init
+    - etc-hosts
