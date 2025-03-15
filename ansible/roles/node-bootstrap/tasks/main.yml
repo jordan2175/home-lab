@@ -1,0 +1,128 @@
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+
+# ------------------------------------------------------------
+# Raspberry Pi EEPROM
+# ------------------------------------------------------------
+
+- name: Setup RPI EEPROM settings
+  ansible.builtin.lineinfile:
+    insertafter: EOF
+    line: |
+      RPI_EEPROM_USE_FLASHROM=1
+      CM4_ENABLE_RPI_EEPROM_UPDATE=1
+    path: /etc/default/rpi-eeprom-update
+
+
+# ------------------------------------------------------------
+# Bashrc Setup
+# ------------------------------------------------------------
+
+- name: Create /etc/bash.bashrc.local file
+  ansible.builtin.copy:
+    src: bash.bashrc.local
+    dest: /etc/bash.bashrc.local
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Setup /root/.bashrc file
+  ansible.builtin.lineinfile:
+    insertafter: EOF
+    line: |
+
+      if [ -f /etc/bash.bashrc.local ]; then
+          . /etc/bash.bashrc.local
+      fi
+    path: /root/.bashrc
+
+- name: Setup /etc/default/skel/.bashrc file
+  ansible.builtin.lineinfile:
+    insertafter: EOF
+    line: |
+
+      if [ -f /etc/bash.bashrc.local ]; then
+          . /etc/bash.bashrc.local
+      fi
+    path: /etc/skel/.bashrc
+
+
+# ------------------------------------------------------------
+# Users and Groups
+# ------------------------------------------------------------
+
+# Ansible user
+
+- name: Update root's password
+  ansible.builtin.user:
+    name: root
+    password: "{{ root_password }}"
+
+- name: Create an ansible group
+  ansible.builtin.group:
+    name: ansible
+    system: true
+    state: present
+
+- name: Create an ansible user
+  ansible.builtin.user:
+    name: ansible
+    comment: Ansible User
+    system: true
+    password_lock: true
+    append: true 
+    group: ansible
+    groups: adm,sudo,ansible
+    create_home: true
+    shell: /bin/bash 
+    state: present
+
+- name: Add ansible's public key to all nodes
+  ansible.posix.authorized_key: 
+    user: ansible
+    # Look up key on the controller and copy it to the node
+    key: "{{ lookup('file', '/home/ansible/.ssh/id_ed25519.pub') }}" 
+    state: present
+
+- name: Create a sudoers file for the ansible user
+  copy:
+    content: ansible ALL = (ALL) NOPASSWD:ALL
+    dest: /etc/sudoers.d/ansible
+    owner: root
+    group: root
+    mode: '0440'
+
+# My user
+
+- name: Create group for my user
+  ansible.builtin.group:
+    name: jordan
+    state: present
+
+- name: Create my user
+  ansible.builtin.user:
+    name: jordan
+    comment: Bret Jordan
+    password_lock: false
+    # password: output from <mkpasswd --method=SHA-512 --rounds=500000>
+    append: true 
+    group: jordan
+    groups: adm,sudo,jordan
+    create_home: true
+    shell: /bin/bash 
+    state: present
+
+- name: Add my user's public key to all nodes
+  ansible.posix.authorized_key: 
+    user: jordan
+    # Look up key on the controller and copy it to the node
+    key: "{{ lookup('file', '/home/jordan/.ssh/id_ed25519.pub') }}" 
+    state: present
+
+- name: Create a sudoers file for the my user
+  copy:
+    content: jordan ALL = (ALL) NOPASSWD:ALL
+    dest: /etc/sudoers.d/jordan
+    owner: root
+    group: root
+    mode: '0440'

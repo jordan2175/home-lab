@@ -1,0 +1,30 @@
+---
+
+# Copyright 2025 Bret Jordan, All rights reserved.
+
+# ------------------------------------------------------------
+# Step 0: Test connectivity 
+# ------------------------------------------------------------
+# 1. Login to each system with the existing account's username
+#    to accept the SSH host key 
+#
+# How to run:
+# ansible-playbook playbooks/bootstrap/bootstrap-node-stage-1.yml
+
+
+- hosts: bootstrap
+  become: true
+  remote_user: root
+
+  vars_prompt:
+    - name: root_password
+      prompt: "new password for root"
+      private: true
+      encrypt: sha512_crypt
+      confirm: true
+      salt_size: 7
+
+  roles:
+    - node-bootstrap
+    - no-cloud-init
+

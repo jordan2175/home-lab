@@ -48,6 +48,7 @@ disable_root: false
 ## --------------------------------------------
 
 
+
 ## --------------------------------------------
 ## Write Out Files
 ## --------------------------------------------
@@ -57,6 +58,16 @@ write_files:
     PermitRootLogin yes
   path: /etc/ssh/sshd_config.d/50-cloud-init.conf
   append: true
+
+
+
+## --------------------------------------------
+## System Updates and Packages
+## --------------------------------------------
+## Update apt database and upgrade packages on first boot
+package_update: true
+package_upgrade: true
+
 
 
 ## --------------------------------------------
