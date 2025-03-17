@@ -1,4 +1,4 @@
-# Bootstrap Phase 0: Flash Gate and Initial Setup
+# Bootstrap Gate Server
 
 
 NOTE: If the locale gets messed up and ansible will not run then try running the
@@ -102,8 +102,9 @@ apt-get install ansible
 )
 ```
 
-Setup ansible.cfg and the inventory files
+## Setup Ansible
 
+Download ansible configuartion and playbooks from Github
 
 
 ## Update /etc/hosts
@@ -141,99 +142,8 @@ reboot
    - Or run the ansible script against the temporary IP address and once it reboots it will get the correct one
  - Login to each node with root to accept SSH key
  - Run Ansible playbooks
-   - ansible-playbook playbooks/bootstrap/bootstrap-node-stage-1.yml
-   - ansible-playbook playbooks/bootstrap/remove-cloud-init.yml
-   - ansible-playbook playbooks/bootstrap/config-etc-hosts.yml
+   - ansible-playbook playbooks/bootstrap-nodes.yml
    - ansible-playbook playbooks/update.yml
-
-## Update /etc/hosts on all nodes
-
-```
-- hosts: nodes
-  gather_facts: false
-  become: true
-  tasks:
-  - name: Add nodes to /etc/hosts
-    ansible.builtin.blockinfile:
-      path: /etc/hosts
-      block: |
-        10.128.64.19 gate01
-        10.128.64.20 tpi01
-        10.128.64.21 node01
-        10.128.64.22 node02
-        10.128.64.23 node03
-        10.128.64.24 node04
-      marker: "# {mark} ANSIBLE MANAGED BLOCK"
-```
-
-## Remove Cloud-Init from all nodes
-
-```
-- hosts: nodes
-  gather_facts: false
-  become: true
-  tasks:
-  - name: Remove and pruge cloud init packages
-    ansible.builtin.apt:
-      name: cloud-init
-      state: absent
-      purge: true
-
-  - name: Remove /etc/cloud
-    ansible.builtin.file:
-      path: /etc/cloud
-      state: absent
-
-  - name: Remove /var/lib/cloud
-    ansible.builtin.file:
-      path: /var/lib/cloud
-      state: absent
-
-  - name: Remove /boot/firmware/user-data
-    ansible.builtin.file:
-      path: /boot/firmware/user-data
-      state: absent
-
-  - name: Remove /boot/firmware/meta-data
-    ansible.builtin.file:
-      path: /boot/firmware/meta-data
-      state: absent
-
-  - name: Remove /boot/firmware/network-config
-    ansible.builtin.file:
-      path: /boot/firmware/network-config
-      state: absent
-```
-
-## Update system
-
-```
-- hosts: nodes
-  gather_facts: false
-  become: true
-  tasks:
-  - name: update and upgrade all nodes in cluster
-    ansible.builtin.apt:
-      update_cache: true
-      upgrade: dist
-    async: 600
-    poll: 5
-
-  - name: check reboot status
-    ansible.builtin.stat:
-      path: /var/run/reboot-required
-      get_checksum: false
-    register: reboot_required_file
-
-  - name: reboot the server (if required).
-    ansible.builtin.reboot:
-    when: reboot_required_file.stat.exists == true
-
-  - name: Remove dependencies that are no longer required.
-    apt:
-      autoremove: true
-```
-
 
 
 
@@ -245,38 +155,7 @@ reboot
   and paste commands on the shell, but here is a playbook that could do it.
 
 
-## Copy root's public SSH key to end nodes
 
-### Cloud Init Tasks
-
-This is all done via Cloud Init
-
-### Manual Tasks
-
-NOTE: Need to first login to each node and set a password for the root user so
-we can copy over the SSH keys that were just created.
-
-```
-(
-ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.20
-ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.21
-ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.22
-ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.23
-ssh-copy-id -i ~/.ssh/id_ed25519.pub 10.128.64.24
-)
-```
-
-
-
-## Remove cloud-init sudoers file
-
-```
-  - name: Delete cloud-init sudo file used for initial bootstrap
-    ansible.builtin.file:
-      path: /etc/sudoers.d/90-cloud-init-users
-      force: true
-      state: absent
-```
 
 
 ## Ansible Tasks: Gate Only
