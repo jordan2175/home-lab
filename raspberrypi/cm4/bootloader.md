@@ -112,7 +112,7 @@ Install the Raspberry Pi `rpiboot` tool on your Mac laptop. Do all of the follow
      - a git pull in the rpi-eeprom directory
      - Or download it from the URL right above and put in this directory
  - Prepare Bootloader Firmware
-   - cd usbboot/recovery
+   - cd ~/raspberrypi/usbboot/recovery
    - ./update-pieeprom.sh 
 
 ### Install Bootloader on CM4
@@ -140,13 +140,13 @@ BOOTLOADER: up to date
 
 ### You can also flash the bootloader in the Turing Pi board
 
- - Shutdown the CM4 OS
+ - Shutdown the OS on a CM4 node
  - Power the Node Off in the Turing Pi config
  - Set the USB to Flash mode
  - Connect the USB A to USB A+USBC adapter to your mac
  - Turn on the Node
  - Run the rpiboot command from above
- - From the recovery directory ../rpiboot -d .`
+ - From the recovery directory `../rpiboot -d .`
  - Make sure to allow the connection to your Mac, I got asked twice
  - Turn node off
  - Switch USB mode back
